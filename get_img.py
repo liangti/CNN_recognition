@@ -1,0 +1,62 @@
+'''
+Created on Apr 23, 2017
+
+@author: uuisafresh
+'''
+import os
+from scipy import misc
+import numpy as np
+from skimage.morphology import dilation,disk
+import shelve
+
+def input_wrapper(f):
+    image = misc.imread(f)
+    sx,sy = image.shape
+    diff = np.abs(sx-sy)
+
+    sx,sy = image.shape
+    image = np.pad(image,((sx//8,sx//8),(sy//8,sy//8)),'constant')
+    if sx > sy:
+        image = np.pad(image,((0,0),(diff//2,diff//2)),'constant')
+    else:
+        image = np.pad(image,((diff//2,diff//2),(0,0)),'constant')
+    
+    image = dilation(image,disk(max(sx,sy)/28))
+    image = misc.imresize(image,(28,28))
+    if np.max(image) > 1:
+        image = image/255.0
+    return image
+
+
+def get_data(path):
+    imgs=os.listdir(path)
+    name_dict=dict()
+    data=[]
+    label=[]
+    name=[]
+    label_dict=dict()
+    count=0
+    for img in imgs:
+#         print img
+        name_list=img.split('_')
+        if len(name_list)<4: continue
+        print name_list[1]
+        data.append(input_wrapper(path+'/'+img))
+        label.append(name_list[3])
+        if not label_dict.has_key(name_list[3]): 
+            label_dict[name_list[3]]=count
+            count+=1
+        name.append(img)
+    
+    img_data=shelve.open('img_data.db')
+    img_data['data']=data
+    img_data['label']=label
+    img_data['label_dict']=label_dict
+    img_data['name']=name
+    print len(img_data['data']), len(img_data['label'])
+    print img_data['label_dict']
+    img_data.close()
+        
+        
+        
+get_data('annotated')
