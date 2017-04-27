@@ -51,8 +51,8 @@ class cnn_recognition():
             return tf.nn.batch_normalization(inputs,
                 batch_mean, batch_var, beta, scale, epsilon),batch_mean,batch_var
   
-    
-    def network(self, data, label, train_size=3000):
+
+    def network(self, data, label=None, train_size=3000, save=False):
         self.x = tf.placeholder(tf.float32, [None, 784])                      
         self.y_actual = tf.placeholder(tf.float32, shape=[None, self.cat_num])   
         
@@ -79,7 +79,7 @@ class cnn_recognition():
         h_fc1_drop = tf.nn.dropout(h_fc1, self.keep_prob)                  
         
         W_fc2 = self.weight_variable([1024, self.cat_num],'W_fc2')
-        b_fc2 = self.bias_variable([self.cat_num],'W_fc2')
+        b_fc2 = self.bias_variable([self.cat_num],'b_fc2')
         self.y_conv = tf.matmul(h_fc1_drop, W_fc2) + b_fc2
         
         cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=self.y_actual, logits=self.y_conv))
@@ -88,40 +88,42 @@ class cnn_recognition():
         train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy) 
         correct_prediction = tf.equal(tf.argmax(self.y_conv,1), tf.argmax(self.y_actual,1)) 
         accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))  
-        with self.sess as sess:
+#         with self.sess as sess:
+        sess=self.sess
+            
+        if self.flag=='train':
             sess.run(tf.global_variables_initializer())
+            batch=0
+            bsize=50
+            for i in range(200):          
+                train_acc = accuracy.eval(feed_dict={self.x:data[batch:batch+bsize], self.y_actual:label[batch:batch+bsize], self.keep_prob: 1.0})
+                print('step',i,'training accuracy',train_acc)
+                
+                train_step.run(feed_dict={self.x: data[batch:batch+bsize], self.y_actual: label[batch:batch+bsize], self.keep_prob: 1.0})
+                batch=(batch+50)%3000
+                
+            saver = tf.train.Saver()
+            saver_path = saver.save(sess, self.model_path)
+            print "Model saved in file: ", saver_path
             
-            if self.flag=='train':
-                batch=0
-                bsize=50
-                for i in range(200):          
-                    train_acc = accuracy.eval(feed_dict={self.x:data[batch:batch+bsize], self.y_actual:label[batch:batch+bsize], self.keep_prob: 1.0})
-                    print('step',i,'training accuracy',train_acc)
-                    
-                    train_step.run(feed_dict={self.x: data[batch:batch+bsize], self.y_actual: label[batch:batch+bsize], self.keep_prob: 1.0})
-                    batch=(batch+50)%3000
-                    
-                saver = tf.train.Saver()
-                saver_path = saver.save(sess, self.model_path)
-                print "Model saved in file: ", saver_path
-                
-                
-            elif self.flag=='predict':
+            
+        elif self.flag=='predict':
+            if True:
                 saver = tf.train.Saver()
                 saver.restore(sess,self.model_path)
-                predict = sess.run(self.y_conv, feed_dict = {self.x:data[0:], self.keep_prob:1})
-                train_size=0
+            predict = sess.run(self.y_conv, feed_dict = {self.x:data[0:], self.keep_prob:1})
+            train_size=0
 #                 y_conv,result = sess.run([self.y_conv,tf.argmax(self.y_conv,1)],feed_dict={self.x:data[train_size:], self.keep_prob: 1.0})
-                return predict
+            return predict
 #                 return y_conv,result
-            
-            
-            else:
-                saver = tf.train.Saver()
-                saver.restore(sess,self.model_path)
-                test_acc,result,cor = sess.run([accuracy,tf.argmax(self.y_conv,1),tf.argmax(self.y_actual,1)],feed_dict={self.x:data[train_size:], self.y_actual:label[train_size:], self.keep_prob: 1.0})
-                print('Final Accuracy',test_acc)
-                return test_acc,result,cor
+        
+        
+        else:
+            saver = tf.train.Saver()
+            saver.restore(sess,self.model_path)
+            test_acc,result,cor = sess.run([accuracy,tf.argmax(self.y_conv,1),tf.argmax(self.y_actual,1)],feed_dict={self.x:data[train_size:], self.y_actual:label[train_size:], self.keep_prob: 1.0})
+            print('Final Accuracy',test_acc)
+            return test_acc,result,cor
 
 
 

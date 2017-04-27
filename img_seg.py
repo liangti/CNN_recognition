@@ -39,7 +39,7 @@ def segment(file_path):
 
         #get the cood list of all connected regions
         coord[tuple([x_min, x_max])] = region.coords
-
+        print coord[tuple([x_min, x_max])]
     return len(bw), len(bw[0]), coord, b_box
 
 #binarize the image
@@ -54,6 +54,7 @@ def binarize(file_path):
 
     return image
 
+
 def judge(i_min, i_max, j_min, j_max):
     if i_min<=j_min and i_max>=j_max:
         return True
@@ -61,15 +62,14 @@ def judge(i_min, i_max, j_min, j_max):
     ins_max=min(i_max,j_max)
 #     com_min=min(i_min,j_min)
 #     com_max=max(i_max,j_max)
-    print (ins_max-ins_min)/float(i_max-i_min)
-    print (ins_max-ins_min)/float(j_max-j_min)
+#     print (ins_max-ins_min)/float(i_max-i_min)
+#     print (ins_max-ins_min)/float(j_max-j_min)
     if ins_min<ins_max:
         if ((ins_max-ins_min)/float(i_max-i_min)+(ins_max-ins_min)/float(j_max-j_min))/2>=0.7:
             return True
     return False
 #merge the overlapping areas                        
 def merge(intervals):
-    print intervals
 #     sort the intervals of x-axis
     keys = []
     merge = []
@@ -79,33 +79,11 @@ def merge(intervals):
             if i==j: continue
             if judge(intervals[i][0],intervals[i][1],intervals[j][0],intervals[j][1]):
                 merge.append(tuple(intervals[j]))
-        if len(merge)<=3:
-            print merge
+        if len(merge)<=3 and len(merge)>1:
+#             print merge
             keys.append(merge)
         merge=[]
-    
-#     intervals.sort(key = lambda x:x[0])
-#     
-#     prev = []
-#     keys = []
-#     merge = []
-# 
-#     prev.append(intervals[0])
-#     merge.append(tuple(intervals[0]))
-#     
-#     for i in range(len(intervals)):
-#         size = len(prev)
-#         if prev[size-1][0] <= intervals[i][0] <= prev[size-1][1]:
-#             prev[size-1][1] = max(intervals[i][1], prev[size-1][1])
-#             merge.append(tuple(intervals[i])) #tuple is max axis
-#             if len(merge) > 2:
-#                 keys.append(merge)
-#                 merge = []
-#         else:
-#             prev.append(intervals[i])
-#             merge.append(tuple(intervals[i]))
-#             keys.append(merge)
-#             merge = []
+
 
     return keys
 
@@ -116,7 +94,7 @@ def recongize(coord, b_box, x, y):
     merge_keys = merge(b_box)
     
     for m_k in merge_keys:
-        print m_k
+#         print m_k
         nm = np.zeros((x, y))
         for co in m_k:
             temp = coord[co]
@@ -127,7 +105,28 @@ def recongize(coord, b_box, x, y):
 
 
 
+def recog_merge(coord, b_box, x, y):
+    merge_keys = merge(b_box)
+    merge_group=[]
+    print len(merge_keys)
+    for m_k in merge_keys:
+        nm = np.zeros((x, y))
+        img_group=[]
+        key_group=[]
+        for co in m_k:
+            cur = np.zeros((x, y))
+            temp = coord[co]
+            nm = connected_arr(nm, temp)
+            cur = connected_arr(cur, temp)
+#             img_group.append(cur)
+            key_group.append(co)
+        img_group.append(nm)
+        print len(img_group)
+        merge_group.append([img_group,key_group])
+    return merge_group
 #get the array of a connected region
+
+
 def connected_arr(nm, con_arr):
 
     for ordinate in con_arr:
@@ -144,9 +143,18 @@ def array2Pic(arr):
         new_im = Image.fromarray(a)
         new_im.show()
 
-name=['SKMBT_36317040717260_eq13.png','SKMBT_36317040717260_eq33_pi_68_109_479_530.png','SKMBT_36317040717260_eq6.png','SKMBT_36317040717260_eq6_=_85_109_596_630.png']
-file_path = name[1]
-x, y, coord, b_box = segment(file_path)
-recongize(coord, b_box, x, y)
+#output all images after merge
+def output_img(coord, x, y):
+    img_group=[]
+    for c in coord:
+        nm = np.zeros((x, y))
+        temp = coord[c]
+        nm = connected_arr(nm, temp)
+        img_group.append(nm)
+    return img_group
+# name=['SKMBT_36317040717260_eq13.png','SKMBT_36317040717260_eq33_pi_68_109_479_530.png','SKMBT_36317040717260_eq6.png','SKMBT_36317040717260_eq6_=_85_109_596_630.png']
+# file_path = name[1]
+# x, y, coord, b_box = segment(file_path)
+# recongize(coord, b_box, x, y)
 
 #array2Pic(res)

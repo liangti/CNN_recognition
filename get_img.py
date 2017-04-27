@@ -34,7 +34,8 @@ def get_data(path):
     data=[]
     label=[]
     name=[]
-    label_dict=dict()
+    l2i=dict()
+    i2l=[]
     count=0
     for img in imgs:
 #         print img
@@ -43,15 +44,17 @@ def get_data(path):
         print name_list[1]
         data.append(input_wrapper(path+'/'+img))
         label.append(name_list[3])
-        if not label_dict.has_key(name_list[3]): 
-            label_dict[name_list[3]]=count
+        if not l2i.has_key(name_list[3]): 
+            l2i[name_list[3]]=count
+            i2l.append(name_list[3])
             count+=1
         name.append(img)
     
     img_data=shelve.open('img_data.db')
     img_data['data']=data
     img_data['label']=label
-    img_data['label_dict']=label_dict
+    img_data['label_dict']=l2i
+    img_data['index']=i2l
     img_data['name']=name
     print len(img_data['data']), len(img_data['label'])
     print img_data['label_dict']
