@@ -50,7 +50,6 @@ def get_set(img_data,img_label=None,label_dict=None):
                 label=np.row_stack((label,cur))
         count+=1
 #         if count>100: break
-        print count
             
 #     print len(data), len(label)
     if img_label!=None:
@@ -78,6 +77,7 @@ if __name__ == '__main__':
              
              
             clf=cnn_recognition(sess,flag='train')
+            clf.init_network()
             clf.network(data_set[0:3000], label_set[0:3000], train_size=3000)
         if flag=='predict':
             
@@ -116,8 +116,7 @@ if __name__ == '__main__':
                 print name[i+3000],i2n[result[i]],i2n[cor[i]]
                 
         if flag=='recognize':
-            name=['SKMBT_36317040717260_eq13.png','SKMBT_36317040717260_eq33_pi_68_109_479_530.png','SKMBT_36317040717260_eq6.png','SKMBT_36317040717260_eq6_=_85_109_596_630.png']
-            file_path='SKMBT_36317040717260_eq6_=_85_109_596_630.png'#name[0]
+            file_path='SKMBT_36317040717260_eq27.png'#name[0]
             x, y, coord, b_box=segment(file_path)
             merge_group=recog_merge(coord, b_box, x, y)
             clf=cnn_recognition(sess,flag='predict')
@@ -128,9 +127,10 @@ if __name__ == '__main__':
                 data=get_set(img)
                 predict=clf.network(data,save=True)
                 result=i2n[np.argmax(predict)]
-                if result in prior:
+                if result in prior and np.max(predict)>3:
                     key_set=m[1]
                     for k in range(1,len(key_set)):
+                        if coord[key_set[0]]==None: continue
                         print len(coord[key_set[0]]),'1',type(coord[key_set[0]])
                         print len(coord[key_set[k]]),'2'
     #                     coord[key_set[0]]=coord[key_set[0]]+coord[key_set[k]]
@@ -143,6 +143,6 @@ if __name__ == '__main__':
                 data=get_set(img)
                 predict=clf.network(data)
                 result=i2n[np.argmax(predict)]
-                print result,'result'
+                print result,np.max(predict),'result'
 #     # clf=cnn_recognition(sess,flag='test')
 #     # clf.network(data_set, label_set, train_size=3000)

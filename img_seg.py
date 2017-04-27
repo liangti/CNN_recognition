@@ -116,10 +116,12 @@ def recog_merge(coord, b_box, x, y):
         for co in m_k:
             cur = np.zeros((x, y))
             temp = coord[co]
-            nm = connected_arr(nm, temp)
-            cur = connected_arr(cur, temp)
+            nm= connected_arr(nm, temp)
+#             cur = connected_arr(cur, temp)
 #             img_group.append(cur)
             key_group.append(co)
+            
+        nm=my_clipper(nm)
         img_group.append(nm)
         print len(img_group)
         merge_group.append([img_group,key_group])
@@ -128,10 +130,8 @@ def recog_merge(coord, b_box, x, y):
 
 
 def connected_arr(nm, con_arr):
-
     for ordinate in con_arr:
-        nm[ordinate[0]][ordinate[1]]= 255
-        
+        nm[ordinate[0]][ordinate[1]]= 255.0
     return nm
 
 #helper function for checking whether an image is segmented correctly
@@ -151,10 +151,28 @@ def output_img(coord, x, y):
         nm = np.zeros((x, y))
         temp = coord[c]
         nm = connected_arr(nm, temp)
+        nm=my_clipper(nm)
         new_im = Image.fromarray(nm)
         new_im.show()
+        
         img_group.append(nm)
     return img_group
+
+def my_clipper(nm):
+    x1,x2,y1,y2=1000,0,1000,0
+    n,m=nm.shape
+    print n,m
+    for i in range(n):
+        for j in range(m):
+            if nm[i][j]>0:
+                x2=max(x2,i)
+                y2=max(y2,j)
+                x1=min(x1,i)
+                y1=min(y1,j)
+    print x1,x2,y1,y2
+    new_nm=nm[x1:x2+1,y1:y2+1]
+    return new_nm
+
 # name=['SKMBT_36317040717260_eq13.png','SKMBT_36317040717260_eq33_pi_68_109_479_530.png','SKMBT_36317040717260_eq6.png','SKMBT_36317040717260_eq6_=_85_109_596_630.png']
 # file_path = name[1]
 # x, y, coord, b_box = segment(file_path)
