@@ -39,7 +39,8 @@ def segment(file_path):
 
         #get the cood list of all connected regions
         coord[tuple([x_min, x_max])] = region.coords
-        print coord[tuple([x_min, x_max])]
+        print(coord[tuple([x_min, x_max])])
+        
     return len(bw), len(bw[0]), coord, b_box
 
 #binarize the image
@@ -56,8 +57,10 @@ def binarize(file_path):
 
 
 def judge(i_min, i_max, j_min, j_max):
+    
     if i_min<=j_min and i_max>=j_max:
         return True
+    
     ins_min=max(i_min,j_min)
     ins_max=min(i_max,j_max)
 #     com_min=min(i_min,j_min)
@@ -68,6 +71,7 @@ def judge(i_min, i_max, j_min, j_max):
         if ((ins_max-ins_min)/float(i_max-i_min)+(ins_max-ins_min)/float(j_max-j_min))/2>=0.7:
             return True
     return False
+
 #merge the overlapping areas                        
 def merge(intervals):
 #     sort the intervals of x-axis
@@ -83,7 +87,6 @@ def merge(intervals):
 #             print merge
             keys.append(merge)
         merge=[]
-
 
     return keys
 
@@ -103,12 +106,12 @@ def recongize(coord, b_box, x, y):
         new_im = Image.fromarray(nm)
         new_im.show()
 
-
-
 def recog_merge(coord, b_box, x, y):
+    
     merge_keys = merge(b_box)
     merge_group=[]
-    print len(merge_keys)
+    print(len(merge_keys))
+    
     for m_k in merge_keys:
         nm = np.zeros((x, y))
         img_group=[]
@@ -123,12 +126,12 @@ def recog_merge(coord, b_box, x, y):
             
         nm=my_clipper(nm)
         img_group.append(nm)
-        print len(img_group)
+        print(len(img_group))
         merge_group.append([img_group,key_group])
+
     return merge_group
+
 #get the array of a connected region
-
-
 def connected_arr(nm, con_arr):
     for ordinate in con_arr:
         nm[ordinate[0]][ordinate[1]]= 255.0
@@ -161,7 +164,7 @@ def output_img(coord, x, y):
 def my_clipper(nm):
     x1,x2,y1,y2=1000,0,1000,0
     n,m=nm.shape
-    print n,m
+    print(n,m)
     for i in range(n):
         for j in range(m):
             if nm[i][j]>0:
@@ -169,7 +172,7 @@ def my_clipper(nm):
                 y2=max(y2,j)
                 x1=min(x1,i)
                 y1=min(y1,j)
-    print x1,x2,y1,y2
+    print(x1,x2,y1,y2)
     new_nm=nm[x1:x2+1,y1:y2+1]
     return new_nm
 

@@ -23,6 +23,7 @@ def input_wrapper(f):
     
     image = dilation(image,disk(max(sx,sy)/28))
     image = misc.imresize(image,(28,28))
+    
     if np.max(image) > 1:
         image = image/255.0
     return image
@@ -41,7 +42,7 @@ def get_data(path):
 #         print img
         name_list=img.split('_')
         if len(name_list)<4: continue
-        print name_list[1]
+        print(name_list[1])
         data.append(input_wrapper(path+'/'+img))
         label.append(name_list[3])
         if not l2i.has_key(name_list[3]): 
@@ -56,10 +57,9 @@ def get_data(path):
     img_data['label_dict']=l2i
     img_data['index']=i2l
     img_data['name']=name
-    print len(img_data['data']), len(img_data['label'])
-    print img_data['label_dict']
+    print(len(img_data['data']), len(img_data['label']))
+    print(img_data['label_dict'])
     img_data.close()
-        
         
         
 get_data('annotated')

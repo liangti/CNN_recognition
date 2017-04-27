@@ -23,6 +23,7 @@ class cnn_recognition():
         weight_decay = tf.multiply(tf.nn.l2_loss(var), 1e-5, name='weight_loss')
         tf.add_to_collection('losses', weight_decay)
         return var
+    
     def bias_variable(self,shape,n):
         initial = tf.constant(0.1, shape=shape)
         return tf.Variable(initial,name=n)
@@ -58,13 +59,15 @@ class cnn_recognition():
         
         x_image = tf.reshape(self.x, [-1,28,28,1])         
         W_conv1 = self.weight_variable([5, 5, 1, 32],'W_conv1')      
-        b_conv1 = self.bias_variable([32],'b_conv1')       
+        b_conv1 = self.bias_variable([32],'b_conv1')
+        
         tmp_1,_,_ = self.batch_norm_layer(self.conv2d(x_image, W_conv1)+b_conv1)
         h_conv1 = tf.nn.relu(tmp_1)  
         h_pool1 = self.max_pool(h_conv1)                                
         
         W_conv2 = self.weight_variable([5, 5, 32, 64],'W_conv2')
         b_conv2 = self.bias_variable([64],'b_conv2')
+        
         tmp_2,_,_ = self.batch_norm_layer(self.conv2d(h_pool1, W_conv2)+b_conv2)
         h_conv2 = tf.nn.relu(tmp_2)     
         h_pool2 = self.max_pool(h_conv2)                                  
@@ -80,11 +83,12 @@ class cnn_recognition():
         W_fc2 = self.weight_variable([1024, self.cat_num],'W_fc2')
         b_fc2 = self.bias_variable([self.cat_num],'b_fc2')
         self.y_conv = tf.matmul(h_fc1_drop, W_fc2) + b_fc2
+        
         if save:
             saver = tf.train.Saver()
             saver.restore(self.sess,self.model_path)
+            
     def network(self, data, label=None, train_size=3000, save=False):
-        
         
         cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=self.y_actual, logits=self.y_conv))
         tf.add_to_collection('losses', cross_entropy)   
@@ -108,11 +112,10 @@ class cnn_recognition():
                 
             saver = tf.train.Saver()
             saver_path = saver.save(sess, self.model_path)
-            print "Model saved in file: ", saver_path
+            print("Model saved in file: ", saver_path)
             
             
         elif self.flag=='predict':
-            
             predict = sess.run(self.y_conv, feed_dict = {self.x:data[0:], self.keep_prob:1})
             train_size=0
 #                 y_conv,result = sess.run([self.y_conv,tf.argmax(self.y_conv,1)],feed_dict={self.x:data[train_size:], self.keep_prob: 1.0})
@@ -144,9 +147,9 @@ def get_set(img_data, img_label,label_dict):
             label=np.row_stack((label,cur))
         count+=1
 #         if count>100: break
-        print count
+        print(count)
             
-    print len(data), len(label)
+    print(len(data), len(label))
     return data, label
 
 # img_data=shelve.open('img_data.db')

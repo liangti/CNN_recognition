@@ -74,8 +74,6 @@ if __name__ == '__main__':
     with tf.Session() as sess:
         if flag=='train':
             data_set,label_set=get_set(img_data['data'], img_data['label'], img_data['label_dict'])
-             
-             
             clf=cnn_recognition(sess,flag='train')
             clf.init_network()
             clf.network(data_set[0:3000], label_set[0:3000], train_size=3000)
@@ -88,19 +86,19 @@ if __name__ == '__main__':
             img=[input_wrapper(file_path)]
             target=['pi']
             data, label=get_set(img,target,img_data['label_dict'])
-            print label
+            print(label)
             result=clf.network(data,label)
-            print result
+            print(result)
     #         print y_conv
-            print sum(result[0])
+            print(sum(result[0]))
             arr = norm_result(np.asarray(result[0]))
-            print arr
+            print(arr)
             
-            print arr
+            print(arr)
             ans=np.argmax(arr)
             
-            print ans,arr[ans],'first'
-            print img_data['label_dict']
+            print(ans,arr[ans],'first')
+            print(img_data['label_dict'])
             
         if flag=='test':
             data_set,label_set=get_set(img_data['data'], img_data['label'], img_data['label_dict'])
@@ -113,7 +111,7 @@ if __name__ == '__main__':
             for key in n2i:
                 i2n[n2i[key]]=key
             for i in range(len(result)):
-                print name[i+3000],i2n[result[i]],i2n[cor[i]]
+                print(name[i+3000],i2n[result[i]],i2n[cor[i]])
                 
         if flag=='recognize':
             file_path='SKMBT_36317040717260_eq27.png'#name[0]
@@ -122,6 +120,7 @@ if __name__ == '__main__':
             clf=cnn_recognition(sess,flag='predict')
             clf.init_network(save=True)
             prior=['pi','=','i','div']
+            
             for m in merge_group:
                 img=[input_wrapper(f=None,arr=m[0][0])]
                 data=get_set(img)
@@ -129,20 +128,23 @@ if __name__ == '__main__':
                 result=i2n[np.argmax(predict)]
                 if result in prior and np.max(predict)>3:
                     key_set=m[1]
+                    
                     for k in range(1,len(key_set)):
                         if coord[key_set[0]]==None: continue
-                        print len(coord[key_set[0]]),'1',type(coord[key_set[0]])
-                        print len(coord[key_set[k]]),'2'
+                        print(len(coord[key_set[0]]),'1',type(coord[key_set[0]]))
+                        print (len(coord[key_set[k]]),'2')
     #                     coord[key_set[0]]=coord[key_set[0]]+coord[key_set[k]]
                         coord[key_set[0]]=np.row_stack((coord[key_set[0]],coord[key_set[k]]))
                         coord[key_set[k]]=None
-                        print len(coord[key_set[0]]),'3'
+                        print(len(coord[key_set[0]]),'3')
+                        
             img_group=output_img(coord, x, y)
             for i in img_group:
                 img=[input_wrapper(f=None,arr=i)]
                 data=get_set(img)
                 predict=clf.network(data)
                 result=i2n[np.argmax(predict)]
-                print result,np.max(predict),'result'
+                print(result,np.max(predict),'result')
+                
 #     # clf=cnn_recognition(sess,flag='test')
 #     # clf.network(data_set, label_set, train_size=3000)
