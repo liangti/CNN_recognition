@@ -147,9 +147,12 @@ def array2Pic(arr):
 def output_img(coord, x, y):
     img_group=[]
     for c in coord:
+        if coord[c]==None: continue
         nm = np.zeros((x, y))
         temp = coord[c]
         nm = connected_arr(nm, temp)
+        new_im = Image.fromarray(nm)
+        new_im.show()
         img_group.append(nm)
     return img_group
 # name=['SKMBT_36317040717260_eq13.png','SKMBT_36317040717260_eq33_pi_68_109_479_530.png','SKMBT_36317040717260_eq6.png','SKMBT_36317040717260_eq6_=_85_109_596_630.png']

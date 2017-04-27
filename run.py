@@ -117,11 +117,11 @@ if __name__ == '__main__':
                 
         if flag=='recognize':
             name=['SKMBT_36317040717260_eq13.png','SKMBT_36317040717260_eq33_pi_68_109_479_530.png','SKMBT_36317040717260_eq6.png','SKMBT_36317040717260_eq6_=_85_109_596_630.png']
-            file_path=name[1]
-    
+            file_path='SKMBT_36317040717260_eq6_=_85_109_596_630.png'#name[0]
             x, y, coord, b_box=segment(file_path)
             merge_group=recog_merge(coord, b_box, x, y)
             clf=cnn_recognition(sess,flag='predict')
+            clf.init_network(save=True)
             prior=['pi','=','i','div']
             for m in merge_group:
                 img=[input_wrapper(f=None,arr=m[0][0])]
@@ -135,6 +135,7 @@ if __name__ == '__main__':
                         print len(coord[key_set[k]]),'2'
     #                     coord[key_set[0]]=coord[key_set[0]]+coord[key_set[k]]
                         coord[key_set[0]]=np.row_stack((coord[key_set[0]],coord[key_set[k]]))
+                        coord[key_set[k]]=None
                         print len(coord[key_set[0]]),'3'
             img_group=output_img(coord, x, y)
             for i in img_group:
@@ -142,6 +143,6 @@ if __name__ == '__main__':
                 data=get_set(img)
                 predict=clf.network(data)
                 result=i2n[np.argmax(predict)]
-                print result
+                print result,'result'
 #     # clf=cnn_recognition(sess,flag='test')
 #     # clf.network(data_set, label_set, train_size=3000)
