@@ -34,9 +34,10 @@ def input_wrapper(f,arr=None):
 
 
 def get_set(img_data,img_label=None,label_dict=None):
+    
     count=0
     for i in range(len(img_data)):
-        cur=np.zeros(41)
+        cur=np.zeros(42)
         if count==0:
             data=img_data[i].reshape(1,784)
             if img_label!=None:
@@ -58,6 +59,7 @@ def get_set(img_data,img_label=None,label_dict=None):
         return data
 
 def norm_result(arr):
+    
     maxx=np.max(arr)
     minn=np.min(arr)
     for x in range(len(arr)):
@@ -66,17 +68,21 @@ def norm_result(arr):
     return arr
 
 if __name__ == '__main__':
+    
     flag='recognize'
     img_data=shelve.open('img_data.db')
     name=img_data['name']
     n2i=img_data['label_dict']
     i2n=img_data['index']
+    
     with tf.Session() as sess:
+        
         if flag=='train':
             data_set,label_set=get_set(img_data['data'], img_data['label'], img_data['label_dict'])
             clf=cnn_recognition(sess,flag='train')
             clf.init_network()
             clf.network(data_set[0:3000], label_set[0:3000], train_size=3000)
+
         if flag=='predict':
             
             clf=cnn_recognition(sess,flag='predict')
@@ -114,7 +120,8 @@ if __name__ == '__main__':
                 print(name[i+3000],i2n[result[i]],i2n[cor[i]])
                 
         if flag=='recognize':
-            file_path='SKMBT_36317040717260_eq27.png'#name[0]
+            
+            file_path='annotated/SKMBT_36317040717260_eq27.png'#name[0]
             x, y, coord, b_box=segment(file_path)
             merge_group=recog_merge(coord, b_box, x, y)
             clf=cnn_recognition(sess,flag='predict')

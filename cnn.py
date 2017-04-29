@@ -9,11 +9,11 @@ import numpy as np
 import shelve
 
 class cnn_recognition():
-    def __init__(self,sess,cat_num=41,model_path='./model.ckpt',flag=True):
+    def __init__(self,sess,cat_num=42,model_path='./model.ckpt',flag=True):
         self.sess = sess
         self.flag = flag
-        self.cat_num=cat_num
-        self.model_path=model_path
+        self.cat_num =cat_num
+        self.model_path = model_path
             
     def weight_variable(self, shape,n):
 #     initial = tf.truncated_normal(shape, stddev=0.1)
@@ -28,10 +28,8 @@ class cnn_recognition():
         initial = tf.constant(0.1, shape=shape)
         return tf.Variable(initial,name=n)
       
-    
     def conv2d(self,x, W):
         return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding='SAME')
-    
     
     def max_pool(self,x):
         return tf.nn.max_pool(x, ksize=[1, 2, 2, 1],strides=[1, 2, 2, 1], padding='SAME')
@@ -53,9 +51,9 @@ class cnn_recognition():
                 batch_mean, batch_var, beta, scale, epsilon),batch_mean,batch_var
   
     def init_network(self,save=False):
+        
         self.x = tf.placeholder(tf.float32, [None, 784])                      
         self.y_actual = tf.placeholder(tf.float32, shape=[None, self.cat_num])   
-        
         
         x_image = tf.reshape(self.x, [-1,28,28,1])         
         W_conv1 = self.weight_variable([5, 5, 1, 32],'W_conv1')      
@@ -74,6 +72,7 @@ class cnn_recognition():
         
         W_fc1 = self.weight_variable([7 * 7 * 64, 1024],'W_fc1')
         b_fc1 = self.bias_variable([1024],'b_fc1')
+        
         h_pool2_flat = tf.reshape(h_pool2, [-1, 7*7*64])              
         h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fc1) + b_fc1)    
         
@@ -93,11 +92,13 @@ class cnn_recognition():
         cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=self.y_actual, logits=self.y_conv))
         tf.add_to_collection('losses', cross_entropy)   
         cross_entropy = tf.add_n(tf.get_collection('losses'), name='total_loss')
+        
         train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy) 
         correct_prediction = tf.equal(tf.argmax(self.y_conv,1), tf.argmax(self.y_actual,1)) 
-        accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))  
-#         with self.sess as sess:
-        sess=self.sess
+        accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+
+        #with self.sess as sess:
+        sess = self.sess
             
         if self.flag=='train':
             sess.run(tf.global_variables_initializer())
@@ -122,7 +123,6 @@ class cnn_recognition():
             return predict
 #                 return y_conv,result
         
-        
         else:
             saver = tf.train.Saver()
             saver.restore(sess,self.model_path)
@@ -130,15 +130,15 @@ class cnn_recognition():
             print('Final Accuracy',test_acc)
             return test_acc,result,cor
 
-
-
 def get_set(img_data, img_label,label_dict):
+    
     count=0
     for i in range(len(img_data)):
-        cur=np.zeros(41)
+        cur = np.zeros(42)
         if count==0:
             data=img_data[i].reshape(1,784)
             cur[label_dict[img_label[i]]]=1
+            print(img_label[i])
             label=cur
             
         else:
@@ -146,19 +146,23 @@ def get_set(img_data, img_label,label_dict):
             cur[label_dict[img_label[i]]]=1
             label=np.row_stack((label,cur))
         count+=1
+        
 #         if count>100: break
         print(count)
             
     print(len(data), len(label))
     return data, label
 
-# img_data=shelve.open('img_data.db')
-# data_set,label_set=get_set(img_data['data'], img_data['label'], img_data['label_dict'])
+#img_data=shelve.open('img_data.db')
+#data_set,label_set=get_set(img_data['data'], img_data['label'], img_data['label_dict'])
 
-# sess=tf.Session()
+#sess=tf.Session()
 
-# clf=cnn_recognition(sess,flag='train')
-# clf.network(data_set[0:3000], label_set[0:3000], train_size=3000)
+#print("training...")
+#clf=cnn_recognition(sess,flag='train')
+#clf.init_network()
+#clf.network(data_set[0:3000], label_set[0:3000], train_size=3000)
 
-# clf=cnn_recognition(sess,flag='test')
-# clf.network(data_set, label_set, train_size=3000)
+#clf=cnn_recognition(sess,flag='test')
+#clf.init_network()
+#clf.network(data_set, label_set, train_size=3000)

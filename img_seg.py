@@ -119,12 +119,12 @@ def recog_merge(coord, b_box, x, y):
         for co in m_k:
             cur = np.zeros((x, y))
             temp = coord[co]
-            nm= connected_arr(nm, temp)
+            nm = connected_arr(nm, temp)
 #             cur = connected_arr(cur, temp)
 #             img_group.append(cur)
             key_group.append(co)
             
-        nm=my_clipper(nm)
+        nm = my_clipper(nm)
         img_group.append(nm)
         print(len(img_group))
         merge_group.append([img_group,key_group])
@@ -162,8 +162,10 @@ def output_img(coord, x, y):
     return img_group
 
 def my_clipper(nm):
+    
     x1,x2,y1,y2=1000,0,1000,0
     n,m=nm.shape
+    
     print(n,m)
     for i in range(n):
         for j in range(m):

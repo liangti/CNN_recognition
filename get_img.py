@@ -4,7 +4,9 @@ Created on Apr 23, 2017
 @author: uuisafresh
 '''
 import os
+import random
 from scipy import misc
+import scipy.ndimage as ndi
 import numpy as np
 from skimage.morphology import dilation,disk
 import shelve
@@ -26,40 +28,75 @@ def input_wrapper(f):
     
     if np.max(image) > 1:
         image = image/255.0
+
     return image
 
+#add noise image
+def add_noise(img):
+    
+    SNR = 0.995
+    noiseNum = int((1 - SNR)*img.shape[0]*img.shape[1])
 
+    for i in range(noiseNum):
+        randX = np.random.random_integers(0,img.shape[0]-1)  
+        randY = np.random.random_integers(0,img.shape[1]-1)  
+
+        if np.random.random_integers(0,1)==0:  
+            img[randX,randY]=0  
+        else:  
+            img[randX,randY]=255
+
+    img = img/255.0
+
+    #imshow(img)
+    #show()
+    return img
+        
 def get_data(path):
-    imgs=os.listdir(path)
-    name_dict=dict()
+    
+    imgs = os.listdir(path)
     data=[]
     label=[]
     name=[]
     l2i=dict()
     i2l=[]
     count=0
+    
     for img in imgs:
-#         print img
-        name_list=img.split('_')
-        if len(name_list)<4: continue
+        #print(img)
+        name_list = img.split('_')
+        if len(name_list) < 4: continue
+        
         print(name_list[1])
+        
         data.append(input_wrapper(path+'/'+img))
+        
         label.append(name_list[3])
-        if not l2i.has_key(name_list[3]): 
-            l2i[name_list[3]]=count
+        
+        if name_list[3] not in l2i:
+            l2i[name_list[3]] = count
             i2l.append(name_list[3])
             count+=1
+            
         name.append(img)
-    
+
+##  add noise class
+    for i in range(15):
+        n = add_noise(np.zeros((28,28)))
+        data.append(n)
+        label.append("noise")
+    i2l.append("noise")
+    l2i["noise"] = count
+
     img_data=shelve.open('img_data.db')
     img_data['data']=data
     img_data['label']=label
     img_data['label_dict']=l2i
     img_data['index']=i2l
     img_data['name']=name
+    
     print(len(img_data['data']), len(img_data['label']))
     print(img_data['label_dict'])
     img_data.close()
-        
-        
+
 get_data('annotated')
