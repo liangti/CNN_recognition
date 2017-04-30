@@ -61,16 +61,15 @@ def get_data(path):
     l2i=dict()
     i2l=[]
     count=0
-    
+
     for img in imgs:
         #print(img)
         name_list = img.split('_')
         if len(name_list) < 4: continue
         
         print(name_list[1])
-        
+       
         data.append(input_wrapper(path+'/'+img))
-        
         label.append(name_list[3])
         
         if name_list[3] not in l2i:
@@ -80,11 +79,12 @@ def get_data(path):
             
         name.append(img)
 
-##  add noise class
     for i in range(15):
+        rand = np.random.random_integers(0,len(data)-1)
         n = add_noise(np.zeros((28,28)))
-        data.append(n)
-        label.append("noise")
+        data.insert(rand, n)
+        label.insert(rand, "noise")
+        
     i2l.append("noise")
     l2i["noise"] = count
 
