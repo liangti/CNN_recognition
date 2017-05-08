@@ -151,7 +151,7 @@ def output_img(coord, x, y):
     img_group=[]
     img_coord=[]
     for c in coord:
-        if coord[c]==None: continue
+        if coord[c] == None: continue
         nm = np.zeros((x, y))
         temp = coord[c]
         nm = connected_arr(nm, temp)
