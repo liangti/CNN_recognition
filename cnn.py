@@ -34,7 +34,6 @@ class cnn_recognition():
     def max_pool(self,x):
         return tf.nn.max_pool(x, ksize=[1, 2, 2, 1],strides=[1, 2, 2, 1], padding='SAME')
     
-    
     def batch_norm_layer(self, inputs, decay = 0.9):
         epsilon = 1e-5
         scale = tf.Variable(tf.ones([inputs.get_shape()[-1]]))
