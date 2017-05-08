@@ -87,7 +87,7 @@ class cnn_recognition():
             saver = tf.train.Saver()
             saver.restore(self.sess,self.model_path)
             
-    def network(self, data, label=None, train_size=3000, save=False):
+    def network(self, data, label=None, save=False):
         
         cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=self.y_actual, logits=self.y_conv))
         tf.add_to_collection('losses', cross_entropy)   
@@ -97,38 +97,38 @@ class cnn_recognition():
         correct_prediction = tf.equal(tf.argmax(self.y_conv,1), tf.argmax(self.y_actual,1)) 
         accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
-        with self.sess as sess:
-            sess = self.sess
-                
-            if self.flag=='train':
-                sess.run(tf.global_variables_initializer())
-                batch=0
-                bsize=50
-                for i in range(200):          
-                    train_acc = accuracy.eval(feed_dict={self.x:data[batch:batch+bsize], self.y_actual:label[batch:batch+bsize], self.keep_prob: 1.0})
-                    print('step',i,'training accuracy',train_acc)
-                    
-                    train_step.run(feed_dict={self.x: data[batch:batch+bsize], self.y_actual: label[batch:batch+bsize], self.keep_prob: 1.0})
-                    batch=(batch+50)%3000
-                    
-                saver = tf.train.Saver()
-                saver_path = saver.save(sess, self.model_path)
-                print("Model saved in file: ", saver_path)
-                
-                
-            elif self.flag=='predict':
-                predict = sess.run(self.y_conv, feed_dict = {self.x:data[0:], self.keep_prob:1})
-                train_size=0
-    #                 y_conv,result = sess.run([self.y_conv,tf.argmax(self.y_conv,1)],feed_dict={self.x:data[train_size:], self.keep_prob: 1.0})
-                return predict
-    #                 return y_conv,result
+#         with self.sess as sess:
+        sess = self.sess
             
-            else:
-                saver = tf.train.Saver()
-                saver.restore(sess,self.model_path)
-                test_acc,result,cor = sess.run([accuracy,tf.argmax(self.y_conv,1),tf.argmax(self.y_actual,1)],feed_dict={self.x:data[train_size:], self.y_actual:label[train_size:], self.keep_prob: 1.0})
-                print('Final Accuracy',test_acc)
-                return test_acc,result,cor
+        if self.flag=='train':
+            sess.run(tf.global_variables_initializer())
+            batch=0
+            bsize=50
+            for i in range(200):          
+                train_acc = accuracy.eval(feed_dict={self.x:data[batch:batch+bsize], self.y_actual:label[batch:batch+bsize], self.keep_prob: 1.0})
+                print('step',i,'training accuracy',train_acc)
+                
+                train_step.run(feed_dict={self.x: data[batch:batch+bsize], self.y_actual: label[batch:batch+bsize], self.keep_prob: 1.0})
+                batch=(batch+50)%len(data)
+                
+            saver = tf.train.Saver()
+            saver_path = saver.save(sess, self.model_path)
+            print("Model saved in file: ", saver_path)
+            
+            
+        elif self.flag=='predict':
+            predict = sess.run(self.y_conv, feed_dict = {self.x:data[0:], self.keep_prob:1})
+            train_size=0
+#                 y_conv,result = sess.run([self.y_conv,tf.argmax(self.y_conv,1)],feed_dict={self.x:data[train_size:], self.keep_prob: 1.0})
+            return predict
+#                 return y_conv,result
+        
+        else:
+            saver = tf.train.Saver()
+            saver.restore(sess,self.model_path)
+            test_acc,result,cor = sess.run([accuracy,tf.argmax(self.y_conv,1),tf.argmax(self.y_actual,1)],feed_dict={self.x:data, self.y_actual:label, self.keep_prob: 1.0})
+            print('Final Accuracy',test_acc)
+            return test_acc,result,cor
 
 def get_set(img_data, img_label,label_dict):
     
@@ -148,21 +148,21 @@ def get_set(img_data, img_label,label_dict):
         count+=1
         
 #         if count>100: break
-        print(count)
+        print(count),'get image'
             
     print(len(data), len(label))
     return data, label
 
-img_data=shelve.open('img_data.db')
-data_set,label_set=get_set(img_data['data'], img_data['label'], img_data['label_dict'])
-
-sess=tf.Session()
+# img_data=shelve.open('img_data.db')
+# data_set,label_set=get_set(img_data['data'], img_data['label'], img_data['label_dict'])
+# 
+# sess=tf.Session()
 
 #print("training...")
 #clf=cnn_recognition(sess,flag='train')
 #clf.init_network()
 #clf.network(data_set[0:3000], label_set[0:3000], train_size=3000)
 
-clf=cnn_recognition(sess,flag='test')
-clf.init_network()
-clf.network(data_set, label_set, train_size=3000)
+# clf=cnn_recognition(sess,flag='test')
+# clf.init_network()
+# clf.network(data_set, label_set, train_size=3000)

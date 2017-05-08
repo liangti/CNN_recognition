@@ -84,6 +84,7 @@ def get_data(path):
         n = add_noise(np.zeros((28,28)))
         data.insert(rand, n)
         label.insert(rand, "noise")
+        name.insert(rand, "noise_"+str(i))
         
     i2l.append("noise")
     l2i["noise"] = count

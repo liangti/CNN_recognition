@@ -39,7 +39,7 @@ def segment(file_path):
 
         #get the cood list of all connected regions
         coord[tuple([x_min, x_max])] = region.coords
-        print(coord[tuple([x_min, x_max])])
+#         print(coord[tuple([x_min, x_max])])
         
     return len(bw), len(bw[0]), coord, b_box
 
@@ -103,14 +103,14 @@ def recongize(coord, b_box, x, y):
             temp = coord[co]
             nm = connected_arr(nm, temp)
 
-        new_im = Image.fromarray(nm)
-        new_im.show()
+#         new_im = Image.fromarray(nm)
+#         new_im.show()
 
 def recog_merge(coord, b_box, x, y):
     
     merge_keys = merge(b_box)
     merge_group=[]
-    print(len(merge_keys))
+#     print(len(merge_keys))
     
     for m_k in merge_keys:
         nm = np.zeros((x, y))
@@ -124,9 +124,9 @@ def recog_merge(coord, b_box, x, y):
 #             img_group.append(cur)
             key_group.append(co)
             
-        nm = my_clipper(nm)
+        nm,x1,x2,y1,y2 = my_clipper(nm)
         img_group.append(nm)
-        print(len(img_group))
+#         print(len(img_group))
         merge_group.append([img_group,key_group])
 
     return merge_group
@@ -144,39 +144,41 @@ def array2Pic(arr):
 
     for a in arr:
         new_im = Image.fromarray(a)
-        new_im.show()
+#         new_im.show()
 
 #output all images after merge
 def output_img(coord, x, y):
     img_group=[]
+    img_coord=[]
     for c in coord:
         if coord[c]==None: continue
         nm = np.zeros((x, y))
         temp = coord[c]
         nm = connected_arr(nm, temp)
-        nm=my_clipper(nm)
-        new_im = Image.fromarray(nm)
-        new_im.show()
+        nm,x1,x2,y1,y2=my_clipper(nm)
+#         new_im = Image.fromarray(nm)
+#         new_im.show()
         
         img_group.append(nm)
-    return img_group
+        img_coord.append([x1,x2,y1,y2])
+    return img_group, img_coord
 
 def my_clipper(nm):
     
-    x1,x2,y1,y2=1000,0,1000,0
+    x1,x2,y2,y1=1000,0,1000,0
     n,m=nm.shape
     
-    print(n,m)
+#     print(n,m)
     for i in range(n):
         for j in range(m):
             if nm[i][j]>0:
                 x2=max(x2,i)
-                y2=max(y2,j)
+                y1=max(y1,j)
                 x1=min(x1,i)
-                y1=min(y1,j)
-    print(x1,x2,y1,y2)
-    new_nm=nm[x1:x2+1,y1:y2+1]
-    return new_nm
+                y2=min(y2,j)
+#     print(x1,x2,y1,y2)
+    new_nm=nm[x1:x2+1,y2:y1+1]
+    return new_nm,str(x1),str(x2),str(y2),str(y1)
 
 # name=['SKMBT_36317040717260_eq13.png','SKMBT_36317040717260_eq33_pi_68_109_479_530.png','SKMBT_36317040717260_eq6.png','SKMBT_36317040717260_eq6_=_85_109_596_630.png']
 # file_path = name[1]
