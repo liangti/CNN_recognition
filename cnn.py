@@ -88,18 +88,19 @@ class cnn_recognition():
             
     def network(self, data, label=None, save=False):
         
-        cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=self.y_actual, logits=self.y_conv))
-        tf.add_to_collection('losses', cross_entropy)   
-        cross_entropy = tf.add_n(tf.get_collection('losses'), name='total_loss')
-        
-        train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy) 
-        correct_prediction = tf.equal(tf.argmax(self.y_conv,1), tf.argmax(self.y_actual,1)) 
-        accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+
 
 #         with self.sess as sess:
         sess = self.sess
             
         if self.flag=='train':
+            cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=self.y_actual, logits=self.y_conv))
+            tf.add_to_collection('losses', cross_entropy)   
+            cross_entropy = tf.add_n(tf.get_collection('losses'), name='total_loss')
+            
+            train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy) 
+            correct_prediction = tf.equal(tf.argmax(self.y_conv,1), tf.argmax(self.y_actual,1)) 
+            accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
             sess.run(tf.global_variables_initializer())
             batch=0
             bsize=50
@@ -117,12 +118,12 @@ class cnn_recognition():
             
         elif self.flag=='predict':
             predict = sess.run(self.y_conv, feed_dict = {self.x:data[0:], self.keep_prob:1})
-            train_size=0
+            
 #                 y_conv,result = sess.run([self.y_conv,tf.argmax(self.y_conv,1)],feed_dict={self.x:data[train_size:], self.keep_prob: 1.0})
             return predict
 #                 return y_conv,result
         
-        else:
+        elif self.flag=='test':
             saver = tf.train.Saver()
             saver.restore(sess,self.model_path)
             test_acc,result,cor = sess.run([accuracy,tf.argmax(self.y_conv,1),tf.argmax(self.y_actual,1)],feed_dict={self.x:data, self.y_actual:label, self.keep_prob: 1.0})

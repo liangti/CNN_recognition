@@ -10,7 +10,7 @@ from cnn import cnn_recognition
 from img_seg import *
 from scipy import misc
 import os
-
+import datetime
 """
 add whatever you think it's essential here
 """
@@ -119,20 +119,27 @@ def predict(image_path):
         name = img_data['name']
         n2i = img_data['label_dict']
         i2n = img_data['index']
-
+        
         img_prediction = []
-
+        img_name = []
         with tf.Session() as sess:
                     
                 clf = cnn_recognition(sess,flag='predict')
                 clf.init_network(save=True)
                 prior=['pi','=','i','div']
-             
+                count=0
+                count_img=0
                 for img_file in image_path:
                     #name_list = img_file.split('_')
-                    #if not len(name_list) == 3: continue
-                    #print(img_file)
                     
+                
+                    
+                    
+#                     if not len(img_file.split('_')) == 3: continue
+#                     if count_img>10:break
+#                     count_img+=1
+                    print(img_file)
+                    starttime = datetime.datetime.now()
                     x, y, coord, b_box=segment(img_file)
                     merge_group = recog_merge(coord, b_box, x, y)
                     
@@ -143,18 +150,20 @@ def predict(image_path):
                         result = i2n[np.argmax(predict)]
                         if result in prior and np.max(predict)>3:
                             key_set=m[1]
-                            
+                             
                             for k in range(1,len(key_set)):
-                                if coord[key_set[0]] is None: continue
-                                print(len(coord[key_set[0]]),'1',type(coord[key_set[0]]))
-                                print(len(coord[key_set[k]]),'2')
-                #                     coord[key_set[0]]=coord[key_set[0]]+coord[key_set[k]]
+                                if coord[key_set[0]] is None or coord[key_set[k]] is None: continue
                                 coord[key_set[0]]= np.row_stack((coord[key_set[0]],coord[key_set[k]]))
                                 coord[key_set[k]] = None
-                                print(len(coord[key_set[0]]),'3')
                                 
                     img_group, img_coord = output_img(coord, x, y)
+                    endtime = datetime.datetime.now()
+                    time1 = (endtime - starttime).seconds
                     
+                    
+                    
+                    
+                    starttime = datetime.datetime.now()
                     content = []
                     count=0
                     for i in range(len(img_group)):
@@ -163,32 +172,38 @@ def predict(image_path):
                         predict=clf.network(data)
                         result=i2n[np.argmax(predict)]
                         ans=np.max(predict)
-                        if ans < 3: continue
+                        if ans < 2: continue
                         count += 1
-                        print(result,ans,img_coord[i],'result')
-                        
+#                         print(result,ans,img_coord[i],'result')
+                          
                         predict_img = SymPred(result, img_coord[i][0], img_coord[i][2], img_coord[i][1], img_coord[i][3])
-                        #print(predict_img.__str__())
                         content.append(predict_img.__str__())
-
+  
                     img_prediction.append(content)
-                    
-        return img_prediction
+                    img_name.append(img_file)
+                    endtime = datetime.datetime.now()
+                    time2 = (endtime - starttime).seconds
+                    print time1,time2
+                    print('finish')
+        return img_prediction, img_name
 
 if __name__ == '__main__':
         
 	image_folder_path = argv[1]
+	print image_folder_path,len(argv)
 	if len(argv) == 3:
 		isWindows_flag = True
-	if isWindows_flag:
-		image_paths = glob(image_folder_path + '/*png')
 	else:
+		isWindows_flag = False #default
+	if isWindows_flag:
 		image_paths = glob(image_folder_path + '\\*png')
+	else:
+		image_paths = glob(image_folder_path + '/*png')
 
-	results = predict(image_paths)
+	results, name = predict(image_paths)
 	with open('predictions.txt','a') as fout:
 		for i in range(len(results)):
-			name = ntpath.basename(image_paths[i])
-			ans = ImgPred(name, results[i])
+# 			name = ntpath.basename(image_paths[i])
+			ans = ImgPred(name[i], results[i])
 			#print(ans.__str__())
 			fout.write(ans.__str__())
